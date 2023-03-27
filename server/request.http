@@ -1,0 +1,32 @@
+GET  http://localhost:8000/chatWithCustomer
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjc4MTI0NDEwLCJleHAiOjE2NzgxMjgwMTB9.h4PrHeYO2ou6lhfF4f0LdO48aBdhF8fuz6iKUKlUH2k
+
+
+###
+
+POST http://localhost:8000/login
+Content-Type: application/json
+
+{
+    "mail":"thuyan1993@gmail.com",
+    "password":"helloworld",
+    "type" :"2"
+}
+
+###
+
+POST http://localhost:8000/register
+Content-Type: application/json
+
+
+{
+    "userName":"Tran Thi Vinh",
+    "phone":"342431321",
+    "mail":"thuyan1993@gmail.com",
+    "address":"Quang Ninh",
+    "password":"helloworld",
+    "type":"2"
+}
+
+### 
+

@@ -1,0 +1,25 @@
+.wrapper {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-image: url('../../../assets/images/background.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.wrapper-layout {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+.container {
+    width: 100%;
+    min-height: calc(100vh - var(--header-navbar-height));
+    margin-top: var(--header-navbar-height);
+}

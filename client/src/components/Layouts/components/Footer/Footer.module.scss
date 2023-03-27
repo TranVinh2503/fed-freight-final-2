@@ -1,0 +1,96 @@
+.wrapper {
+    width: 100%;
+    height: calc((100vh - var(--header-navbar-height)) / 2);
+    background-color: #343a40;
+    color: var(--white-clr);
+}
+
+.footer-container {
+    display: flex;
+    height: calc((100vh - var(--header-navbar-height)) / 2);
+}
+.footer-column {
+    width: 540px;
+    margin: auto;
+}
+
+.logo-des,
+.contact-des {
+    display: flex;
+    line-height: 4.8rem;
+    margin-bottom: 1.2rem;
+    align-items: center;
+}
+
+.logo-des {
+    padding-right: 2rem;
+}
+
+.logo {
+    width: 4.4rem;
+    height: 4.4rem;
+    margin-right: 1.6rem;
+}
+
+.des {
+    font-size: 3.2rem;
+    font-weight: bold;
+}
+
+.contact-heading {
+    font-size: 2.4rem;
+    font-weight: bold;
+}
+
+.contact-des {
+    line-height: 2.4rem;
+}
+
+.phone {
+    font-size: 1.2rem;
+    line-height: 2.4rem;
+}
+
+.slogan {
+    font-size: 2.4rem;
+    line-height: 2.4rem;
+    font-weight: bold;
+    padding-top: 2rem;
+}
+
+.footer-heading {
+    font-size: 1.6rem;
+    line-height: 1.8rem;
+    font-weight: bold;
+    margin-bottom: 0.8rem;
+}
+
+.footer-text {
+    font-size: 1.2rem;
+    margin-bottom: 2.4rem;
+}
+
+.footer-form {
+    display: flex;
+}
+
+.footer-form input {
+    font-size: 1.6rem;
+    width: 36rem;
+    height: 3.6rem;
+    margin-right: 1.6rem;
+    border-radius: 0.8rem;
+    border: none;
+    padding: 1.2rem 0 1.2rem 0.8rem;
+}
+
+.footer-social-media {
+    display: flex;
+    margin-top: 2rem;
+}
+
+.social-media-icon {
+    height: 2.4rem;
+    width: 2.4rem;
+    margin-right: 2.4rem;
+}

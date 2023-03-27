@@ -1,0 +1,113 @@
+.wrapper {
+    display: flex;
+    margin-bottom: 3rem;
+    border-radius: 1.5rem;
+}
+.wrapper:hover {
+    background-color: gray;
+}
+
+.customer-avatar {
+    border-radius: 6rem;
+    margin-right: 1.6rem;
+}
+
+.feedback {
+    color: var(--text-clr);
+    padding-left: 4rem;
+
+    & .customer-avatar {
+        height: 6rem;
+        width: 6rem;
+    }
+
+    & .customer-name {
+        font-size: 1.8rem;
+        line-height: 2rem;
+        font-size: 600;
+        font-weight: 600;
+        margin-right: 2rem;
+        text-align: left;
+        margin-bottom: 0.8rem;
+    }
+
+    & .customer-text {
+        font-size: 1.4rem;
+        line-height: 1.6rem;
+        text-align: left;
+    }
+}
+
+.chatbox {
+    color: var(--white-clr);
+    height: 5rem;
+    width: 90%;
+
+    & .customer-avatar {
+        height: 4.8rem;
+        width: 4.8rem;
+    }
+
+    &.customer-details {
+        height: 4.8rem;
+        width: 100%;
+    }
+
+    & .customer-name {
+        font-size: 1.4rem;
+        line-height: 2.4rem;
+        font-size: 600;
+        font-weight: 600;
+        margin-right: 2rem;
+        text-align: left;
+        align-items: center;
+    }
+
+    & .customer-text {
+        white-space: nowrap;
+        width: 200px;
+        font-size: 1.2rem;
+        line-height: 1.4rem;
+        text-align: left;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+.search {
+    color: var(--text-clr);
+    height: 5rem;
+    width: 90%;
+    margin: 0.6rem;
+
+    & .customer-avatar {
+        height: 4.8rem;
+        width: 4.8rem;
+    }
+
+    &.customer-details {
+        height: 4.8rem;
+        width: 100%;
+    }
+
+    & .customer-name {
+        font-size: 1.4rem;
+        line-height: 2.4rem;
+        font-size: 600;
+        font-weight: 600;
+        margin-right: 2rem;
+        text-align: left;
+        align-items: center;
+    }
+
+    & .customer-text {
+        white-space: nowrap;
+        width: 200px;
+        font-size: 1.2rem;
+        line-height: 1.4rem;
+        text-align: left;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: rgba(22, 24, 35, 0.5);
+    }
+}

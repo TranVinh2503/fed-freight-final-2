@@ -1,0 +1,62 @@
+.wrapper {
+    position: relative;
+    width: 30%;
+    height: 0;
+    padding-bottom: 30%;
+    background-image: url('../../assets/images/myDieu.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+    display: flex;
+    justify-content: space-evenly;
+    color: white;
+    border: none;
+    border-radius: 2rem;
+    margin: 1.2rem;
+}
+
+.detail {
+    position: absolute;
+    bottom: 0;
+    height: 6rem;
+    width: 90%;
+    display: flex;
+    justify-content: space-between;
+}
+
+.info {
+    width: 75%;
+}
+
+.rate {
+    display: flex;
+    justify-content: space-between;
+}
+
+.stars {
+    width: 50%;
+    display: flex;
+    justify-content: start;
+}
+
+.icon {
+    width: 2rem;
+    height: 2rem;
+    margin: 0 0.3rem;
+}
+
+.votes {
+    width: 50%;
+    font-size: 1.4rem;
+}
+
+.name {
+    font-size: 2rem;
+    line-height: 2.8rem;
+    font-weight: 600;
+    float: left;
+    font-style: italic;
+}
+
+.action {
+    width: 25%;
+}

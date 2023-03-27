@@ -1,0 +1,130 @@
+.wrapper {
+    height: calc(95vh - var(--header-navbar-height));
+    margin-top: calc(var(--header-navbar-height));
+    border: 0.2rem solid white;
+    border-radius: 1.2rem;
+    z-index: 2;
+}
+
+.search-container {
+    position: relative;
+    height: 2rem;
+    width: 21%;
+    margin-top: 0.8rem;
+    margin-left: 0.8rem;
+    padding: 1.6rem;
+    display: flex;
+    align-items: center;
+    border: 0.2rem solid white;
+    border-radius: 2.4rem;
+}
+
+.search {
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    width: 1.8rem;
+    height: 1.8rem;
+    margin-right: 0.8rem;
+}
+
+.input {
+    height: 2rem;
+    font-size: 1.6rem;
+    line-height: 2rem;
+    background: transparent;
+    border: none;
+    color: white;
+}
+
+.input:focus {
+    outline: none;
+}
+
+::placeholder {
+    color: white;
+}
+
+.chat-container {
+    padding: 1.6rem;
+    display: flex;
+    height: calc(87vh - var(--header-navbar-height));
+    justify-content: space-between;
+}
+
+.chat-list {
+    flex: 1;
+    overflow-y: scroll;
+}
+
+
+.chat-room {
+    flex: 3;
+}
+
+.chat-screen {
+    height: 85%;
+    overflow-y: scroll;
+    position: relative;
+}
+
+.chat-send {
+    margin-top: 2.5%;
+    height: 10%;
+}
+
+.chat-send form {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+}
+
+.chat-send form label {
+    height: 5rem;
+    width: 5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon {
+    width: 2.4rem;
+    height: 2.4rem;
+}
+
+.icon:hover {
+    cursor: pointer;
+}
+
+.message-input {
+    position: relative;
+    height: 2rem;
+    width: 85%;
+    margin: 0.8rem;
+    padding: 1.6rem;
+    display: flex;
+    align-items: center;
+    border: 0.1rem solid white;
+    border-radius: 2.4rem;
+}
+
+.message-input .input {
+    width: 100%;
+}
+
+.file,
+.send {
+    display: none;
+}
+
+.no-conversations-chat {
+    position:absolute;
+    top:30%;
+    font-size: 3rem;
+    color: aliceblue;
+    text-align: center;
+    cursor: default;
+    justify-items: center;
+}
