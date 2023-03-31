@@ -19,12 +19,13 @@
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.0",
     "socket.io": "^4.6.1",
-    "sqlite3": "^5.1.4"
+    "sqlite3": "^5.1.4",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.21"
   },
   "proxy": {
-    "proxy":"http://localhost:8000"
+    "proxy": "http://localhost:8000"
   }
 }

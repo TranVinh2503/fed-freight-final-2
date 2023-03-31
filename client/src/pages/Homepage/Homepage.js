@@ -3,10 +3,12 @@ import styles from './Homepage.module.scss';
 import icons from '~/assets/icons';
 import images from '~/assets/images';
 import UserBox from '~/components/UserBox';
+// import { useNavigate } from 'react-router-dom';
 
 const cx = classNames.bind(styles);
 
 function Homepage() {
+        // const navigate = useNavigate(); // <--- initialize useHistory
     return (
         <div className={cx('wrapper')}>
             <div className={cx('grid')}>

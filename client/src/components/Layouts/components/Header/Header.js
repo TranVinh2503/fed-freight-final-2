@@ -2,12 +2,12 @@ import classNames from 'classnames/bind';
 import styles from './Header.module.scss';
 import icons from '~/assets/icons';
 import Button from '~/components/Button';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useContext } from 'react';
 import Tippy from '@tippyjs/react/headless';
 import 'tippy.js/dist/tippy.css';
 import { Wrapper as PopperWrapper } from '~/components/Popper';
-import jwtDecode from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
+import { AppContext } from '~/Context/AppContext';
 
 const cx = classNames.bind(styles);
 
@@ -15,7 +15,7 @@ function Header() {
     const navigate = useNavigate(); // <--- initialize useHistory
     // change color when scrolling
     const [color, setColor] = useState(false);
-    const [userName, setUserName] = useState('');
+    // const [userName, setUserName] = useState('');
     const changeColor = () => {
         if (window.scrollY > 0) {
             setColor(true);
@@ -25,32 +25,10 @@ function Header() {
     };
     window.addEventListener('scroll', changeColor);
 
-    // change button content based on the path
     const pathName = window.location.pathname;
 
-    function getUsernameFromToken(token) {
-        try {
-            const decodedToken = jwtDecode(token);
-            return decodedToken.user;
-        } catch (error) {
-            if (error.name === 'InvalidTokenError') {
-                console.log('Invalid token specified');
-            } else {
-                console.log('Error decoding token:', error.message);
-            }
-        }
-    }
-
-    useEffect(() => {
-        const userName = localStorage.getItem('access-token');
-        setUserName(getUsernameFromToken(userName));
-    }, []);
-
-    // display notifications
-    // const []
-
-    // display options
-    // const []
+    const  {user}  = useContext(AppContext);
+    const userName =  user?.user;
 
     return (
         <header className={color ? cx('wrapper-bgc') : cx('wrapper-trans')}>
@@ -69,7 +47,7 @@ function Header() {
                                 </Button>
                             </li>
                             <li>
-                                <Button text to="/">
+                                <Button text to="/" onClick={() => window.location.reload(true)}>
                                     Thông Tin
                                 </Button>
                             </li>
@@ -79,7 +57,14 @@ function Header() {
                                 </Button>
                             </li>
                             <li>
-                                <Button text to="/chat">
+                                <Button
+                                    text
+                                    to="/chat"
+                                    onClick={() => {
+                                        navigate('/chat');
+                                        window.location.reload(true);
+                                    }}
+                                >
                                     Liên Lạc
                                 </Button>
                             </li>
@@ -111,11 +96,13 @@ function Header() {
                                                         Xem Lịch sử
                                                     </Button>
 
-                                                    <Button option to="/"
-                                                    onClick={() => {
-                                                        localStorage.removeItem('access-token');
-                                                        window.location.reload(true)
-                                                    }}
+                                                    <Button
+                                                        option
+                                                        to="/"
+                                                        onClick={() => {
+                                                            localStorage.removeItem('access-token');
+                                                            window.location.reload(true);
+                                                        }}
                                                     >
                                                         Đăng Xuất
                                                     </Button>

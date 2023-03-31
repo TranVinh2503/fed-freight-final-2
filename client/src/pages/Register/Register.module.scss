@@ -66,6 +66,16 @@ input:focus + label {
     top: 0.8rem;
 }
 
+.success {
+    color: #4bb543;
+    text-align: center
+}
+
+.error {
+    color: #ff5151;
+    text-align: center;
+}
+
 .error-message {
     color: #ff5151;
     font-size: 1.2rem;

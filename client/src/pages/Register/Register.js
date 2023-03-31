@@ -18,6 +18,7 @@ const Register = () => {
         },
     ]);
     const [message, setMessage] = useState('');
+    const [isMessage, setIsMessage] = useState('');
     const [countdown, setCountdown] = useState(3);
 
     const regexEmail =
@@ -61,13 +62,17 @@ const Register = () => {
         })
             .then((response) => response.json())
             .then((data) => {
-                console.log(data);
                 if (data.register) {
-                    setMessage('Đăng ký thành công! ');
+                    setMessage(true);
                     const interval = setInterval(() => {
+                        setMessage('Đăng ký thành công');
+                        setIsMessage(true);
                         setCountdown((prevCountdown) => prevCountdown - 1);
                     }, 1000);
                     return () => clearInterval(interval); // cleanup interval on unmount
+                } else if (data.register === false) {
+                    setMessage("Đăng ký thất bại")
+                    setIsMessage(false);
                 }
             })
             .catch(console.error());
@@ -84,12 +89,25 @@ const Register = () => {
         <div className={cx('wrapper')}>
             <div className={cx('inner')}>
                 <h2>Đăng Ký</h2>
-                {message && (
-                    <div>
-                        <h1>{message}</h1>
-                        <p>Redirecting to login page in {countdown} seconds...</p>
-                    </div>
-                )}
+                {(() => {
+                    if (message && isMessage === true) {
+                        console.log(message);
+                        return (
+                            <div className={cx('success')}>
+                                <h3>Đăng ký thành công</h3>
+                                <h4>Chuyển hướng đến trang đăng nhập sau {countdown} giây...</h4>
+                            </div>
+                        );
+                    } else if (message && isMessage === false) {
+                        return (
+                            <div className={cx('error')}>
+                                <h3>Email đã tồn tại</h3>
+                            </div>
+                        );
+                    }
+                    return null;
+                })()}
+
                 <form action="#" onSubmit={formik.handleSubmit}>
                     <div className={cx('input-box')}>
                         <img src={icons.username} alt="" className={cx('icon')}></img>

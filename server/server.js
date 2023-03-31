@@ -2,6 +2,7 @@ require("dotenv").config();
 const cors = require("cors");
 const sqlite3 = require("sqlite3");
 var bodyParser = require("body-parser");
+const uuid = require('uuid');
 
 const verifyToken = require("./middleware/auth");
 const bcrypt = require("bcrypt");
@@ -27,6 +28,8 @@ const io = require("socket.io")(server, {
 const db = new sqlite3.Database("FedFreight.db");
 
 app.post("/register", (req, res) => {
+  const id = uuid.v4()
+  console.log(id);
   const userName = req.body.username;
   const mail = req.body.email;
   const password = req.body.password;
@@ -48,7 +51,6 @@ app.post("/register", (req, res) => {
       "SELECT * FROM Contributor WHERE mail = ?",
       mail,
       async (err, user) => {
-        console.log(user);
         if (user) {
           res.json({ register: false });
         } else {
@@ -57,8 +59,8 @@ app.post("/register", (req, res) => {
           const hash_password = await bcrypt.hash(password, salt);
 
           db.run(
-            "INSERT INTO Contributor(userName,phone, mail,address, password) VALUES(? ,? ,?,?,?)",
-            [userName, null, mail, null, hash_password],
+            "INSERT INTO Contributor(id,userName,phone, mail,address, password) VALUES(?,?,? ,?,?,?)",
+            [id,userName, null, mail, null, hash_password],
             function (err) {
               if (err) {
                 return console.log(err.message);
@@ -79,14 +81,12 @@ app.post("/register", (req, res) => {
       if (user) {
         res.json({ register: false });
       } else {
-        console.log(1);
         const password = req.body.password;
         const salt = await bcrypt.genSalt(10);
         const hash_password = await bcrypt.hash(password, salt);
-        console.log(hash_password);
         db.run(
-          "INSERT INTO Customer(userName,phone, mail,address, password) VALUES(? ,? ,?,?,?)",
-          [userName, null, mail, null, hash_password],
+          "INSERT INTO Customer(id,userName,phone, mail,address, password) VALUES(?,? ,? ,?,?,?)",
+          [id,userName, null, mail, null, hash_password],
           function (err) {
             if (err) {
               return console.log(err.message);
@@ -114,14 +114,12 @@ app.post("/login", async (req, res) => {
      WHERE mail = ?`,
       mail,
       async (err, user) => {
-        console.log(user);
         if (err) {
           return console.error(err.message);
         }
         if (!user) {
-          res.send({ login: false });
+          res.json({ login: false });
         } else {
-          console.log(user);
           const match = await bcrypt.compare(password, user.password);
           if (match) {
             const token = jwt.sign(
@@ -131,16 +129,15 @@ app.post("/login", async (req, res) => {
                 expiresIn: "1h",
               }
             );
-            console.log(token);
             res.json({ login: true, token });
           } else {
-            res.send({ login: false });
+            res.json({ login: false });
           }
         }
       }
     );
   } else {
-    res.send({ login: false });
+    res.json({ readyLogin: false });
   }
 });
 
@@ -148,7 +145,6 @@ app.get("/contributorList", (req, res) => {
   db.all(
     "SELECT id,userName,stars,quantity FROM Contributor ",
     async (err, user) => {
-      console.log(user);
       if (err) {
         return console.error(err.message);
       }
@@ -165,7 +161,6 @@ app.get("/contributorList", (req, res) => {
 
 app.get("/user/:id", (req, res) => {
   const idUser = req.params.id;
-  console.log(idUser);
 
   if (idUser != undefined) {
     db.get(
@@ -180,7 +175,6 @@ app.get("/user/:id", (req, res) => {
       WHERE id = ?`,
       idUser,
       async (err, user) => {
-        console.log(user);
         if (err) {
           return console.error(err.message);
         }
@@ -197,8 +191,6 @@ app.get("/user/:id", (req, res) => {
 });
 
 app.post("/uploadAvatar", verifyToken, (req, res) => {
-  console.log(req.file);
-
   const { filename, mimetype, size } = req.file;
 
   db.run(
@@ -206,7 +198,6 @@ app.post("/uploadAvatar", verifyToken, (req, res) => {
     [filename, mimetype, size],
     function (err) {
       if (err) {
-        console.error(err.message);
         res.status(500).send("Error saving avatar to database.");
       } else {
         res.status(200).send("Avatar saved to database.");
@@ -214,7 +205,52 @@ app.post("/uploadAvatar", verifyToken, (req, res) => {
     }
   );
 });
+let users = [];
 
+const addUser = (userId, socketId) => {
+  !users.some((user) => user.userId === userId) &&
+    users.push({ userId, socketId });
+};
+
+const removeUser = (socketId) => {
+  users = users.filter((user) => user.socketId !== socketId);
+};
+
+const getUser = (userId) => {
+  const result = users.find((user) => user.userId === userId);
+  return users.find((user) => user.userId === userId);
+};
+
+io.on("connection", (socket) => {
+  //when connect
+  console.log("New client connected " + socket.id);
+  // io.emit("Welcome", "hello this is socket server")
+
+  //take userId and socketId from user
+  socket.on("addUser", (userId) => {
+    addUser(userId, socket.id);
+    io.emit("getUsers", users);
+    
+  });
+
+  //send and get message
+  socket.on("sendMessage", ({ senderId, receiverId, text }) => {
+    const user = getUser(receiverId);
+    const IdUser = user?.socketId
+
+    io.to(IdUser).emit("getMessage", {
+      senderId,
+      text,
+    });
+  });
+
+  //when disconnect
+  socket.on("disconnect", () => {
+    console.log("a user disconnected!");
+    removeUser(socket.id);
+    io.emit("getUsers", users);
+  });
+});
 
 // # start Conversations
 
@@ -222,11 +258,9 @@ app.post("/uploadAvatar", verifyToken, (req, res) => {
 app.post("/conversation", (req, res) => {
   const sql = `INSERT INTO Conversations (senderId, receiverId) VALUES (?, ?)`;
   const values = [req.body.senderId, req.body.receiverId];
-  console.log(values);
 
   db.run(sql, values, function (err) {
     if (err) {
-      console.log(err);
       res.status(500).json(err);
     } else {
       const conversation = {
@@ -234,7 +268,7 @@ app.post("/conversation", (req, res) => {
         senderId: req.body.senderId,
         receiverId: req.body.receiverId,
       };
-      console.log(1);
+
       res.status(200).json(conversation);
     }
   });
@@ -242,17 +276,15 @@ app.post("/conversation", (req, res) => {
 
 //Get conversation
 app.get("/conversation/:userId", (req, res) => {
+  console.log(req.params.userId);
   const userId = req.params.userId;
   const sql =
     "SELECT * FROM Conversations WHERE senderId = ? OR receiverId = ?";
   const values = [userId, userId];
-
   db.all(sql, values, (err, rows) => {
     if (err) {
-      console.error(err.message);
       res.status(500).json(err);
     } else {
-      console.log(rows);
       res.status(200).json(rows);
     }
   });
@@ -267,11 +299,9 @@ app.post("/message", (req, res) => {
   const sql =
     "INSERT INTO Messages (conversationId, sender, text) VALUES (?, ?, ?)";
   const values = [conversationId, sender, text];
-  console.log(values);
 
   db.run(sql, values, async (err) => {
     if (err) {
-      console.error(err.message);
       res.status(500).json(err);
     } else {
       const message = {
@@ -280,7 +310,7 @@ app.post("/message", (req, res) => {
         text,
         timestamp: new Date().toISOString(),
       };
-      console.log(message);
+
       res.status(200).json(message);
     }
   });

@@ -3,10 +3,10 @@ import styles from './Chat.module.scss';
 import icons from '~/assets/icons/icons';
 import UserBox from '~/components/UserBox';
 import Bubble from '~/components/Bubble';
-import { useState, useEffect, useRef } from 'react';
-import jwtDecode from 'jwt-decode';
+import { useState, useEffect, useRef, useContext } from 'react';
 import axios from 'axios';
 import { io } from 'socket.io-client';
+import { AppContext } from '~/Context/AppContext';
 const cx = classNames.bind(styles);
 
 function Chat() {
@@ -14,64 +14,41 @@ function Chat() {
     const [currentChat, setCurrentChat] = useState(null);
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
-    const [arrivalMessage, setArrivalMessage] = useState(null);
     const socket = useRef();
     const scrollRef = useRef();
-    const [user, setUser] = useState([
-        {
-            id: '',
-            userName: '',
-        },
-    ]);
-    useEffect(() => {
-        socket.current = io('ws://localhost:8900');
-        socket.current.on('getMessage', (data) => {
-            setArrivalMessage({
-                sender: data.senderId,
-                text: data.text,
-                createAt: Date.now(),
-            });
-        });
-    }, []);
+    const { user } = useContext(AppContext);
 
     useEffect(() => {
-        arrivalMessage &&
-            currentChat?.senderId === arrivalMessage?.sender &&
-            setMessages((prev)  => [...prev, arrivalMessage]);
-    }, [arrivalMessage, currentChat]);
+        socket.current = io('http://localhost:8000');
+
+        socket.current.on('getMessage', (data) => {
+            console.log(data);
+            const newMessage = {
+                sender: data.senderId,
+                text: data.text,
+            };
+            // data && currentChat?.members.includes(data.sender) &&
+            setMessages((oldMsgs) => [...oldMsgs, newMessage]);
+        });
+        return () => {
+            socket.current.disconnect();
+        };
+    }, []);
 
     useEffect(() => {
         socket.current.emit('addUser', user.id);
-        socket.current.on('getUsers', (users) => {
-            console.log(users);
-        });
+        socket.current.on('getUsers', (users) => {});
     }, [user]);
-
-    function getUserFromToken(token) {
-        try {
-            const decodedToken = jwtDecode(token);
-            console.log(decodedToken);
-            
-            return decodedToken;
-        } catch (error) {
-            if (error.name === 'InvalidTokenError') {
-                console.log('Invalid token specified');
-            } else {
-                console.log('Error decoding token:', error.message);
-            }
-        }
-    }
-
-    useEffect(() => {
-        const userFromToken = localStorage.getItem('access-token');
-        setUser(getUserFromToken(userFromToken));
-    }, []);
 
     useEffect(() => {
         const getConversations = async () => {
             try {
-                const res = await axios.get('http://localhost:8000/conversation/' + user.id);
-                setConversations(res.data);
+                if (user.id !== '') {
+                    const res = await axios.get('http://localhost:8000/conversation/' + user.id);
+                    setConversations(res.data);
+                }else{
+                    console.log('not has new chat box')
+                }
             } catch (err) {
                 console.log(err);
             }
@@ -100,12 +77,9 @@ function Chat() {
             conversationId: currentChat.id,
         };
 
-        // console.log( parseInt(user.id) === parseInt(currentChat.senderId) , currentChat.senderId )
-
         socket.current.emit('sendMessage', {
             senderId: user.id,
-            receiverId:
-                parseInt(user.id) === parseInt(currentChat.senderId) ? currentChat.receiverId : currentChat.senderId,
+            receiverId: user.id === currentChat.senderId ? currentChat.receiverId : currentChat.senderId,
             text: newMessage,
         });
 
@@ -117,11 +91,10 @@ function Chat() {
             console.log(err);
         }
     };
-    console.log(user.id);
 
     useEffect(() => {
-        scrollRef.current?.scrollIntoView({ behavior: "smooth" });
-      }, [messages]);
+        scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
 
     return (
         <div className={cx('wrapper')}>
@@ -140,8 +113,8 @@ function Chat() {
                                     chatbox
                                     key={index}
                                     avatarId={'mono'}
-                                    idUser={parseInt(user.id) === parseInt(c.senderId) ? c.receiverId : c.senderId}
-                                    content={"nhấn vào để xem"}
+                                    idUser={user.id === c.senderId ? c.receiverId : c.senderId}
+                                    content={'nhấn vào để xem'}
                                 />
                             </div>
                         ))}
@@ -152,55 +125,50 @@ function Chat() {
                             {currentChat ? (
                                 <>
                                     {messages.map((m, index) => (
-                                        <div key={index} ref = {scrollRef}>
-                                            <Bubble
-                                            key={index}
-                                            own={parseInt(m.sender) === user.id}
-                                            content={m.text}
-                                        ></Bubble>
+                                        <div key={index} ref={scrollRef}>
+                                            <Bubble key={index} own={m.sender === user.id} content={m.text}></Bubble>
                                         </div>
-                                        
                                     ))}
                                 </>
                             ) : (
-                                <span className={cx('no-conversations-chat')}>
-                                    Vui lòng nhấn vào một hộp thoại 
-                                </span>
+                                <span className={cx('no-conversations-chat')}>Vui lòng nhấn vào một hộp thoại</span>
                             )}
                         </div>
-                        <div className={cx('chat-send')}>
-                            <form>
-                                <input type="file" name="file" id="file" className={cx('file')}></input>
-                                <label htmlFor="file">
-                                    <img src={icons.picture} alt="" className={cx('icon')}></img>
-                                </label>
+                        {currentChat && (
+                            <div className={cx('chat-send')}>
+                                <form>
+                                    <input type="file" name="file" id="file" className={cx('file')}></input>
+                                    <label htmlFor="file">
+                                        <img src={icons.picture} alt="" className={cx('icon')}></img>
+                                    </label>
 
-                                <div className={cx('message-input')}>
+                                    <div className={cx('message-input')}>
+                                        <input
+                                            type="text"
+                                            name="message"
+                                            id="message"
+                                            className={cx('input')}
+                                            placeholder="write something..."
+                                            onChange={(e) => {
+                                                setNewMessage(e.target.value);
+                                            }}
+                                            value={newMessage}
+                                        ></input>
+                                    </div>
+
                                     <input
-                                        type="text"
-                                        name="message"
-                                        id="message"
-                                        className={cx('input')}
-                                        placeholder="write something..."
-                                        onChange={(e) => {
-                                            setNewMessage(e.target.value);
-                                        }}
-                                        value={newMessage}
+                                        type="submit"
+                                        name="send"
+                                        id="send"
+                                        className={cx('send')}
+                                        onClick={handleSubmit}
                                     ></input>
-                                </div>
-
-                                <input
-                                    type="submit"
-                                    name="send"
-                                    id="send"
-                                    className={cx('send')}
-                                    onClick={handleSubmit}
-                                ></input>
-                                <label htmlFor="send">
-                                    <img src={icons.send} alt="" className={cx('icon')}></img>
-                                </label>
-                            </form>
-                        </div>
+                                    <label htmlFor="send">
+                                        <img src={icons.send} alt="" className={cx('icon')}></img>
+                                    </label>
+                                </form>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

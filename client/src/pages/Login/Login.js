@@ -16,6 +16,8 @@ const Login = () => {
             password: '',
         },
     ]);
+    const [isLogin, setIsLogin] = useState('');
+    const [message, setMessage] = useState('');
     const navigate = useNavigate(); // <--- initialize useHistory
     const regexEmail =
         /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()\.,;\s@\"]+\.{0,1})+[^<>()\.,;:\s@\"]{2,})$/;
@@ -37,14 +39,13 @@ const Login = () => {
         onSubmit: (values) => {
             const dataSubmit = {
                 email: values.email,
-                password: values.password
-            }
-            setUser(dataSubmit)
+                password: values.password,
+            };
+            setUser(dataSubmit);
         },
     });
 
     useEffect(() => {
-        console.log(user)
         fetch('http://localhost:8000/login', {
             method: 'POST',
             headers: {
@@ -55,27 +56,43 @@ const Login = () => {
             .then((response) => response.json())
             .then(
                 (data) => {
-                    console.log(data)
-                if (data.login) {
-                    alert('Login successful');
-                    localStorage.setItem('access-token', data.token);
-                    navigate('/');
-                }
-
-            },
-            // Note: it's important to handle errors here
-            // instead of a catch() block so that we don't swallow
-            // exceptions from actual bugs in components.
-            (error) => {
-              console.log(error)
-            }
-            )
+                    if (data.login) {
+                        setMessage('successful');
+                        setIsLogin(true);
+                        localStorage.setItem('access-token', data.token);
+                        navigate('/');
+                        window.location.reload(true)
+                    } else if(data.login === false) {
+                        setMessage('fail');
+                        setIsLogin(false);
+                    }
+                },
+                (error) => {
+                    console.log(error);
+                },
+            );
     }, [user, navigate]);
 
     return (
         <div className={cx('wrapper')}>
             <div className={cx('inner')}>
                 <h2>Đăng Nhập</h2>
+                {(() => {
+                    if (message !== ' ' && isLogin === true) {
+                        return (
+                            <div className={cx('success')}>
+                                <h3>Đăng nhập thành công</h3>
+                            </div>
+                        );
+                    } else if (message !== ' ' && isLogin === false) {
+                        return (
+                            <div className={cx('error')}>
+                                <h3>Đăng nhập thất bại, vui lòng kiểm tra lại thông tin đăng nhập</h3>
+                            </div>
+                        );
+                    }
+                    return null;
+                })()}
                 <form action="/" onSubmit={formik.handleSubmit} autoComplete="off">
                     <div className={cx('input-box')}>
                         <img src={icons.email} alt="" className={cx('icon')}></img>
