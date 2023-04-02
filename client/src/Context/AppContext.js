@@ -7,7 +7,8 @@ export const AppContext = createContext({});
 export const AppProvider = ({ children }) => {
     const [user, setUser] = useState({
         id:'',
-        user:''
+        user:'',
+        role:''
     });
 
     function getUserFromToken(token) {

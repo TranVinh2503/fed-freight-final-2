@@ -7,6 +7,7 @@ import ContributorList from '~/pages/ContributorList';
 import Chat from '~/pages/Chat';
 import UploadAvatar from '~/pages/UploadAvatar'
 import Tracking from '~/pages/Tracking';
+import UpdateProfile from '~/pages/UpdateProfile/UpdateProfile';
 
 // Public Routes: Access without login
 const publicRoutes = [
@@ -17,6 +18,7 @@ const publicRoutes = [
     { path: '/chat', component: Chat },
     { path: '/uploadAvatar', component: UploadAvatar },
     { path: '/tracking', component: Tracking, layout: HavingSidebar },
+    { path: '/updateProfile', component: UpdateProfile, layout: HavingSidebar },
     
 ];
 

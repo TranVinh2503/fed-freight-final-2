@@ -86,7 +86,7 @@ function Header() {
                                             render={(attrs) => (
                                                 <PopperWrapper>
                                                     <h4 className={cx('option')}>Tùy chọn</h4>
-                                                    <Button option to="/">
+                                                    <Button option to="/updateProfile">
                                                         Xem Hồ sơ
                                                     </Button>
                                                     <Button option to="/">

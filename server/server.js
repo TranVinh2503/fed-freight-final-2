@@ -2,7 +2,7 @@ require("dotenv").config();
 const cors = require("cors");
 const sqlite3 = require("sqlite3");
 var bodyParser = require("body-parser");
-const uuid = require('uuid');
+const uuid = require("uuid");
 
 const verifyToken = require("./middleware/auth");
 const bcrypt = require("bcrypt");
@@ -28,7 +28,7 @@ const io = require("socket.io")(server, {
 const db = new sqlite3.Database("FedFreight.db");
 
 app.post("/register", (req, res) => {
-  const id = uuid.v4()
+  const id = uuid.v4();
   console.log(id);
   const userName = req.body.username;
   const mail = req.body.email;
@@ -60,7 +60,7 @@ app.post("/register", (req, res) => {
 
           db.run(
             "INSERT INTO Contributor(id,userName,phone, mail,address, password) VALUES(?,?,? ,?,?,?)",
-            [id,userName, null, mail, null, hash_password],
+            [id, userName, null, mail, null, hash_password],
             function (err) {
               if (err) {
                 return console.log(err.message);
@@ -86,7 +86,7 @@ app.post("/register", (req, res) => {
         const hash_password = await bcrypt.hash(password, salt);
         db.run(
           "INSERT INTO Customer(id,userName,phone, mail,address, password) VALUES(?,? ,? ,?,?,?)",
-          [id,userName, null, mail, null, hash_password],
+          [id, userName, null, mail, null, hash_password],
           function (err) {
             if (err) {
               return console.log(err.message);
@@ -103,7 +103,7 @@ app.post("/login", async (req, res) => {
   const password = req.body.password;
   if (mail != undefined && password != undefined) {
     db.get(
-      `SELECT id,mail, password, userName
+      `SELECT id,mail, password, userName,userType
      FROM (
        SELECT id,mail, password, userName, 'customer' AS userType
        FROM Customer
@@ -123,7 +123,12 @@ app.post("/login", async (req, res) => {
           const match = await bcrypt.compare(password, user.password);
           if (match) {
             const token = jwt.sign(
-              { id: user.id, user: user.userName },
+              {
+                id: user.id,
+                user: user.userName,
+                gmail: user.mail,
+                role: user.userType,
+              },
               process.env.ACCESS_TOKEN_SECRET,
               {
                 expiresIn: "1h",
@@ -164,7 +169,7 @@ app.get("/user/:id", (req, res) => {
 
   if (idUser != undefined) {
     db.get(
-      `SELECT id,userName
+      `SELECT id,userName,userType
       FROM (
         SELECT id,userName, 'customer' AS userType
         FROM Customer
@@ -181,7 +186,8 @@ app.get("/user/:id", (req, res) => {
         if (!user) {
           res.send({ getUserName: false });
         } else {
-          res.send({ userName: user.userName });
+          console.log(user);
+          res.send({ userName: user.userName, userRole: user.userType });
         }
       }
     );
@@ -230,13 +236,12 @@ io.on("connection", (socket) => {
   socket.on("addUser", (userId) => {
     addUser(userId, socket.id);
     io.emit("getUsers", users);
-    
   });
 
   //send and get message
   socket.on("sendMessage", ({ senderId, receiverId, text }) => {
     const user = getUser(receiverId);
-    const IdUser = user?.socketId
+    const IdUser = user?.socketId;
 
     io.to(IdUser).emit("getMessage", {
       senderId,
@@ -330,6 +335,56 @@ app.get("/message/:conversationId", async (req, res) => {
   });
 });
 // # End Messages
+
+// Update Avatar
+
+app.post("/avatarUpload",verifyToken, (req, res) => {
+  // const { filename, path, mimetype } = req.body.selectedFile;
+  console.log(req.body);
+  const filename = req.body.selectedFile.name
+  const path = req.body.selectedFile.size
+  const mimetype = req.body.selectedFile.type
+  console.log(filename);
+
+
+  const table = req.body.role;
+
+  // const sql = `
+  //   UPDATE ${table}
+  //   SET avatar_filename = ?,
+  //       avatar_path = ?,
+  //       avatar_mimetype = ?
+  //   WHERE id = ?
+  // `;
+  // const values = [filename, path, mimetype, req.body.userId];
+
+  // db.run(sql, values, function (error) {
+  //   if (error) {
+  //     console.error(error);
+  //     res.status(500).send("Internal Server Error");
+  //   } else {
+  //     const sql = `
+  //       SELECT *
+  //       FROM ${table}
+  //       WHERE id = ?
+  //     `;
+  //     const values = [req.body.userId];
+
+  //     db.get(sql, values, (error, row) => {
+  //       if (error) {
+  //         console.error(error);
+  //         res.status(500).send("Internal Server Error");
+  //       } else {
+  //         res.json({
+  //           message: "Avatar uploaded successfully",
+  //           user: row,
+  //           avatarUrl: `/uploads/${filename}`,
+  //         });
+  //       }
+  //     });
+  //   }
+  // });
+});
 
 server.listen(8000, () => {
   console.log("Server running on 8000");

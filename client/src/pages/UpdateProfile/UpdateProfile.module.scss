@@ -1,0 +1,85 @@
+.content {
+    width: 100%;
+    min-height: 100vh;
+    padding-top: var(--header-navbar-height);
+    text-align: center;
+    display: flex;
+}
+
+.column1 {
+    flex: 1;
+    height: 65vh;
+    border-right: 1px solid black;
+    margin-top: 5%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.name,
+.heading {
+    font-size: 2.8rem;
+    font-weight: bold;
+}
+
+.nick-name {
+    padding-bottom: 2%;
+    font-style: italic;
+}
+
+.avatar {
+    width: 280px;
+    height: 280px;
+    border-radius: 100%;
+    margin: 5% 0 10%;
+}
+
+.column2 {
+    height: 65vh;
+    flex: 2;
+    margin-top: 5%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.input-form {
+    display: flex;
+    flex-wrap: wrap;
+    
+}
+
+.input-form > div {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+}
+
+// .heading {
+//     width: 100%;
+//     text-align: left;
+//     margin-left: 10%;
+// }
+
+.title {
+    text-align: left;
+    margin-left: 5%;
+}
+
+.input-form div:nth-child(odd) .title{
+    margin-left: 15%;
+}
+
+.input {
+    width: 80%;
+    margin: 3% 5% 6%;
+    padding: 1rem;
+    font-size: 1.4rem;
+    border: 1px solid #D3CFCF;
+}
+
+.input-form div:nth-child(odd) .input{
+    margin-left: 15%;
+}
