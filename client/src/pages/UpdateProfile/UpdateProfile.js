@@ -5,6 +5,7 @@ import images from '~/assets/images/images';
 import { useContext } from 'react';
 import { AppContext } from '~/Context/AppContext';
 import { useState } from 'react';
+import axios from 'axios';
 
 const cx = classNames.bind(styles);
 
@@ -18,49 +19,50 @@ function UpdateProfile() {
 
     const handleFileSelect = (event) => {
         const file = event.target.files[0];
+        console.log(file);
 
-        setSelectedFile(file);
-
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onloadend = () => {
-            setPreviewUrl(reader.result);
-        };
-    };
-
-    const handleSubmit = (event) => {
-        event.preventDefault();
-
-        const reqData = {
-            selectedFile:selectedFile,
-            userId: user?.id,
-            role: user?.role,
-        };
-        console.log(reqData);
-
-        fetch('http://localhost:8000/avatarUpload', {
-            method: 'POST',
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('access-token')}`,
-                'Content-Type': 'application/json',
-            },
-            body:JSON.stringify(reqData),
-        })
-            .then((response) => response.json())
-            .then((data) => {
-                console.log(data);
-                setPreviewUrl(data.avatarUrl);
-            })
-            .catch((error) => console.error(error));
-    };
-
-    const isContributor = ()=>{
-        if(user?.role === 'contributor'){
-            return true
-        }else{
-            return false
+        if (file) {
+            setSelectedFile(file);
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onloadend = () => {
+                setPreviewUrl(reader.result);
+            };
         }
-    }
+    };
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        const fileName = `${user?.id}_${selectedFile.name}`;
+
+        const formData = new FormData();
+        formData.append('avatar', selectedFile, fileName);
+        formData.append('userName', user?.user);
+        formData.append('userId', user?.id);
+        formData.append('role', user?.role);
+        try {
+            const response = await axios.post('http://localhost:8000/avatarUpload', formData, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('access-token')}`,
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            const blobResponse = await fetch(response.data.url);
+            const blob = await blobResponse.blob();
+            setPreviewUrl(URL.createObjectURL(blob));
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const isContributor = () => {
+        if (user?.role === 'contributor') {
+            return true;
+        } else {
+            return false;
+        }
+    };
 
     return (
         <div className={cx('wrapper')}>
@@ -69,17 +71,15 @@ function UpdateProfile() {
                     <div className={cx('column1')}>
                         <div className={cx('name')}>Vivianna</div>
                         <div className={cx('nick-name')}>{userName}</div>
-                        {isContributor ? (<div className={cx('role')}>Người phân phối</div>):(<div className={cx('role')}>Người phân phối</div>)}
-                        
-                        {/* <img className={cx('avatar')} src={images.mono}></img> */}
+                        {isContributor ? (
+                            <div className={cx('role')}>Người phân phối</div>
+                        ) : (
+                            <div className={cx('role')}>Khách hàng</div>
+                        )}
                         <form onSubmit={handleSubmit}>
                             {previewUrl && <img className={cx('avatar')} src={previewUrl} alt="Avatar Preview" />}
-                            <label>
-                                <input type="file" onChange={handleFileSelect} />
-                            </label>
-                            <Button search type="submit">
-                                Đổi ảnh
-                            </Button>
+                            <input type="file" id="avatar" onChange={handleFileSelect}/>
+                            <label htmlFor='avatar'>Thay đổi ảnh</label>
                         </form>
                     </div>
                     <div className={cx('column2')}>
@@ -110,7 +110,7 @@ function UpdateProfile() {
                                 <input type="text" className={cx('input')} defaultValue={gmail}></input>
                             </div>
                         </form>
-                        <Button search>Cập nhật</Button>
+                        <Button update>Cập nhật</Button>
                     </div>
                 </div>
             </div>

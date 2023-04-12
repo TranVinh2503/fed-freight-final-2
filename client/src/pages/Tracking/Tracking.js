@@ -33,26 +33,14 @@ function Tracking() {
                         </div>
                     </Tippy>
                     <div className={cx('order-result')}>
-                        <h3 className={cx('content-sub-heading')}>Kết quả tra cứu</h3>
+                        <h3 className={cx('content-sub-heading')}>Kết quả trạng thái đơn hàng</h3>
                         <table>
                             <tr>
-                                <th className={cx('column2')}>Mã bill</th>
-                                <th className={cx('column2')}>Người gửi</th>
-                                <th className={cx('column2')}>Người nhận</th>
-                                <th className={cx('column3')}>Thông tin sản phẩm</th>
-                                <th className={cx('column1')}>Số lượng</th>
+                                <th colSpan={3}>Mã bill:  </th>
                             </tr>
                             <tr>
-                                <td>572269893861</td>
-                                <td>Lê Quang Trung</td>
-                                <td>Lê Trung Đức</td>
-                                <td>
-                                    <ul>
-                                        <li>32 tuýp kem đánh răng Sensodie 32 tuýp kem đánh răng Sensodie</li>
-                                        <li>20kg bột mì chính</li>
-                                    </ul>
-                                </td>
-                                <td>01</td>
+                                <td></td>
+                                <td></td> 
                             </tr>
                         </table>
                     </div>

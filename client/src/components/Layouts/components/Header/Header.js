@@ -2,12 +2,12 @@ import classNames from 'classnames/bind';
 import styles from './Header.module.scss';
 import icons from '~/assets/icons';
 import Button from '~/components/Button';
-import React, { useState, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import Tippy from '@tippyjs/react/headless';
 import 'tippy.js/dist/tippy.css';
 import { Wrapper as PopperWrapper } from '~/components/Popper';
+import jwtDecode from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
-import { AppContext } from '~/Context/AppContext';
 
 const cx = classNames.bind(styles);
 
@@ -15,7 +15,7 @@ function Header() {
     const navigate = useNavigate(); // <--- initialize useHistory
     // change color when scrolling
     const [color, setColor] = useState(false);
-    // const [userName, setUserName] = useState('');
+    const [userName, setUserName] = useState('');
     const changeColor = () => {
         if (window.scrollY > 0) {
             setColor(true);
@@ -25,10 +25,32 @@ function Header() {
     };
     window.addEventListener('scroll', changeColor);
 
+    // change button content based on the path
     const pathName = window.location.pathname;
 
-    const  {user}  = useContext(AppContext);
-    const userName =  user?.user;
+    function getUsernameFromToken(token) {
+        try {
+            const decodedToken = jwtDecode(token);
+            return decodedToken.user;
+        } catch (error) {
+            if (error.name === 'InvalidTokenError') {
+                console.log('Invalid token specified');
+            } else {
+                console.log('Error decoding token:', error.message);
+            }
+        }
+    }
+
+    useEffect(() => {
+        const userName = localStorage.getItem('access-token');
+        setUserName(getUsernameFromToken(userName));
+    }, []);
+
+    // display notifications
+    // const []
+
+    // display options
+    // const []
 
     return (
         <header className={color ? cx('wrapper-bgc') : cx('wrapper-trans')}>
@@ -47,7 +69,7 @@ function Header() {
                                 </Button>
                             </li>
                             <li>
-                                <Button text to="/" onClick={() => window.location.reload(true)}>
+                                <Button text to="/">
                                     Thông Tin
                                 </Button>
                             </li>
@@ -57,20 +79,18 @@ function Header() {
                                 </Button>
                             </li>
                             <li>
-                                <Button
-                                    text
-                                    to="/chat"
-                                    onClick={() => {
-                                        navigate('/chat');
-                                        window.location.reload(true);
-                                    }}
-                                >
-                                    Liên Lạc
+                                <Button text to="/tracking">
+                                    Tra cứu
+                                </Button>
+                            </li>
+                            <li>
+                                <Button text to="/chat">
+                                    Chat
                                 </Button>
                             </li>
                             {userName ? (
                                 <>
-                                    <li>
+                                    {/* <li>
                                         <Tippy content="Notifications">
                                             <img
                                                 src={color ? icons.bell : icons.whiteBell}
@@ -78,7 +98,7 @@ function Header() {
                                                 className={cx('icon')}
                                             ></img>
                                         </Tippy>
-                                    </li>
+                                    </li> */}
                                     <li>
                                         <Tippy
                                             placement="bottom"
@@ -86,23 +106,21 @@ function Header() {
                                             render={(attrs) => (
                                                 <PopperWrapper>
                                                     <h4 className={cx('option')}>Tùy chọn</h4>
-                                                    <Button option to="/updateProfile">
+                                                    <Button option to="/">
                                                         Xem Hồ sơ
                                                     </Button>
                                                     <Button option to="/">
                                                         Xem Lịch sử
                                                     </Button>
                                                     <Button option to="/">
-                                                        Xem Lịch sử
+                                                        Xem Hành trình
                                                     </Button>
 
-                                                    <Button
-                                                        option
-                                                        to="/"
-                                                        onClick={() => {
-                                                            localStorage.removeItem('access-token');
-                                                            window.location.reload(true);
-                                                        }}
+                                                    <Button option to="/"
+                                                    onClick={() => {
+                                                        localStorage.removeItem('access-token');
+                                                        window.location.reload(true)
+                                                    }}
                                                     >
                                                         Đăng Xuất
                                                     </Button>
@@ -125,11 +143,11 @@ function Header() {
                             ) : (
                                 <li>
                                     {pathName === '/login' ? (
-                                        <Button redirectPage to="/register">
+                                        <Button text to="/register">
                                             Đăng Ký
                                         </Button>
                                     ) : (
-                                        <Button redirectPage to="/login">
+                                        <Button text to="/login">
                                             Đăng Nhập
                                         </Button>
                                     )}

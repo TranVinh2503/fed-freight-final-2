@@ -4,36 +4,61 @@ import Button from '../Button';
 import icons from '~/assets/icons';
 import Tippy from '@tippyjs/react/headless';
 import { Wrapper as PopperWrapper } from '~/components/Popper';
-import { useContext } from 'react';
+import { useState,useEffect } from 'react';
 import axios from 'axios';
-import { AppContext } from '~/Context/AppContext';
+import jwtDecode from 'jwt-decode';
+
 
 const cx = classNames.bind(styles);
 
-function Contributor({ idContributor, stars, quantity, name }) {
-    const userContext = useContext(AppContext);
-    const user = userContext.user;
-
+function Contributor({ idContributor,stars, quantity, name }) {
+    const [user, setUser] = useState([
+        {
+            id: '',
+            userName: '',
+        },
+    ]);
     const list = [];
     for (let i = 1; i <= stars; i++) {
-        list.push(<img src={icons.star} key={i} alt="" className={cx('icon')}></img>);
-    }
-    for (let i = stars + 1; i <= 5; i++) {
-        list.push(<img src={icons.uncolorStar} key={i} alt="" className={cx('icon')}></img>);
+        list.push(<img src={icons.star} alt="" className={cx('icon')}></img>);
     }
 
-    const handleSelect = async () => {
+    while (list.length < 5) {
+        list.push(<img src={icons.uncolorStar} alt="" className={cx('icon')}></img>);
+    }
+
+    function getUserFromToken(token) {
+        try {
+            const decodedToken = jwtDecode(token);
+            return decodedToken;
+        } catch (error) {
+            if (error.name === 'InvalidTokenError') {
+                console.log('Invalid token specified');
+            } else {
+                console.log('Error decoding token:', error.message);
+            }
+        }
+    }
+    useEffect(() => {
+        const userFromToken = localStorage.getItem('access-token');
+        setUser(getUserFromToken(userFromToken));
+    }, []);
+
+    const handleSelect = async ()=>{
         const conversation = {
             senderId: user.id,
-            receiverId: idContributor,
-        };
-        try {
-            const res = await axios.post('http://localhost:8000/conversation', conversation);
-            console.log(res.data);
-        } catch (err) {
-            console.log(err);
+            receiverId:idContributor
+
         }
-    };
+        try{
+            
+            const res = await axios.post('http://localhost:8000/conversation',conversation)
+            console.log(res.data)
+
+        }catch(err){
+            console.log(err)
+        }
+    }
     return (
         <div className={cx('wrapper')}>
             <div className={cx('detail')}>
@@ -44,24 +69,26 @@ function Contributor({ idContributor, stars, quantity, name }) {
                     </div>
                     <div className={cx('name')}>{name}</div>
                 </div>
-                <Tippy
-                    placement="top"
-                    interactive
-                    render={(attrs) => (
-                        <PopperWrapper>
-                            <Button option to="/chat" onClick={handleSelect}>
-                                Nhắn tin
-                            </Button>
-                            <Button option to="/" onClick={handleSelect}>
-                                Đặt Giao hàng
-                            </Button>
-                        </PopperWrapper>
-                    )}
-                >
-                    <div className={cx('action')}>
+                    <Tippy
+                        placement="top"
+                        interactive
+                        render={(attrs) => (
+                            <PopperWrapper>
+                                <Button option to="/chat" onClick={handleSelect}>
+                                    Nhắn tin
+                                </Button>
+                                <Button option to="/" onClick={handleSelect}>
+                                    Đặt Giao hàng
+                                </Button>
+                                
+                            </PopperWrapper>
+                        )}
+                    >
+                                <div className={cx('action')}>
                         <Button contact>Liên Lạc</Button>
-                    </div>
-                </Tippy>
+                </div>
+                    </Tippy>
+                    
             </div>
         </div>
     );

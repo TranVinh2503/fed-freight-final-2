@@ -3,10 +3,10 @@ import styles from './Chat.module.scss';
 import icons from '~/assets/icons/icons';
 import UserBox from '~/components/UserBox';
 import Bubble from '~/components/Bubble';
-import { useState, useEffect, useRef, useContext } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import jwtDecode from 'jwt-decode';
 import axios from 'axios';
 import { io } from 'socket.io-client';
-import { AppContext } from '~/Context/AppContext';
 const cx = classNames.bind(styles);
 
 function Chat() {
@@ -14,41 +14,64 @@ function Chat() {
     const [currentChat, setCurrentChat] = useState(null);
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
+    const [arrivalMessage, setArrivalMessage] = useState(null);
     const socket = useRef();
     const scrollRef = useRef();
-    const { user } = useContext(AppContext);
-
+    const [user, setUser] = useState([
+        {
+            id: '',
+            userName: '',
+        },
+    ]);
     useEffect(() => {
-        socket.current = io('http://localhost:8000');
-
+        socket.current = io('ws://localhost:8900');
         socket.current.on('getMessage', (data) => {
-            console.log(data);
-            const newMessage = {
+            setArrivalMessage({
                 sender: data.senderId,
                 text: data.text,
-            };
-            // data && currentChat?.members.includes(data.sender) &&
-            setMessages((oldMsgs) => [...oldMsgs, newMessage]);
+                createAt: Date.now(),
+            });
         });
-        return () => {
-            socket.current.disconnect();
-        };
     }, []);
 
     useEffect(() => {
+        arrivalMessage &&
+            currentChat?.senderId === arrivalMessage?.sender &&
+            setMessages((prev) => [...prev, arrivalMessage]);
+    }, [arrivalMessage, currentChat]);
+
+    useEffect(() => {
         socket.current.emit('addUser', user.id);
-        socket.current.on('getUsers', (users) => {});
+        socket.current.on('getUsers', (users) => {
+            console.log(users);
+        });
     }, [user]);
+
+    function getUserFromToken(token) {
+        try {
+            const decodedToken = jwtDecode(token);
+            console.log(decodedToken);
+
+            return decodedToken;
+        } catch (error) {
+            if (error.name === 'InvalidTokenError') {
+                console.log('Invalid token specified');
+            } else {
+                console.log('Error decoding token:', error.message);
+            }
+        }
+    }
+
+    useEffect(() => {
+        const userFromToken = localStorage.getItem('access-token');
+        setUser(getUserFromToken(userFromToken));
+    }, []);
 
     useEffect(() => {
         const getConversations = async () => {
             try {
-                if (user.id !== '') {
-                    const res = await axios.get('http://localhost:8000/conversation/' + user.id);
-                    setConversations(res.data);
-                }else{
-                    console.log('not has new chat box')
-                }
+                const res = await axios.get('http://localhost:8000/conversation/' + user.id);
+                setConversations(res.data);
             } catch (err) {
                 console.log(err);
             }
@@ -77,9 +100,12 @@ function Chat() {
             conversationId: currentChat.id,
         };
 
+        // console.log( parseInt(user.id) === parseInt(currentChat.senderId) , currentChat.senderId )
+
         socket.current.emit('sendMessage', {
             senderId: user.id,
-            receiverId: user.id === currentChat.senderId ? currentChat.receiverId : currentChat.senderId,
+            receiverId:
+                parseInt(user.id) === parseInt(currentChat.senderId) ? currentChat.receiverId : currentChat.senderId,
             text: newMessage,
         });
 
@@ -91,6 +117,7 @@ function Chat() {
             console.log(err);
         }
     };
+    console.log(user.id);
 
     useEffect(() => {
         scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -108,14 +135,22 @@ function Chat() {
                 <div className={cx('chat-container')}>
                     <div className={cx('chat-list')}>
                         {conversations.map((c, index) => (
-                            <div onClick={() => setCurrentChat(c)} key={index}>
-                                <UserBox
-                                    chatbox
+                            <div>
+                                <input className={cx('chat-box')} type="radio" name="chat-box" id={index}></input>
+                                <label
+                                    className={cx('user-box')}
+                                    htmlFor={index}
+                                    onClick={() => setCurrentChat(c)}
                                     key={index}
-                                    avatarId={'mono'}
-                                    idUser={user.id === c.senderId ? c.receiverId : c.senderId}
-                                    content={'nhấn vào để xem'}
-                                />
+                                >
+                                    <UserBox
+                                        chatbox
+                                        key={index}
+                                        avatarId={'mono'}
+                                        idUser={parseInt(user.id) === parseInt(c.senderId) ? c.receiverId : c.senderId}
+                                        content={'nhấn vào để xem'}
+                                    ></UserBox>
+                                </label>
                             </div>
                         ))}
                     </div>
@@ -126,7 +161,11 @@ function Chat() {
                                 <>
                                     {messages.map((m, index) => (
                                         <div key={index} ref={scrollRef}>
-                                            <Bubble key={index} own={m.sender === user.id} content={m.text}></Bubble>
+                                            <Bubble
+                                                key={index}
+                                                own={parseInt(m.sender) === user.id}
+                                                content={m.text}
+                                            ></Bubble>
                                         </div>
                                     ))}
                                 </>
@@ -134,41 +173,39 @@ function Chat() {
                                 <span className={cx('no-conversations-chat')}>Vui lòng nhấn vào một hộp thoại</span>
                             )}
                         </div>
-                        {currentChat && (
-                            <div className={cx('chat-send')}>
-                                <form>
-                                    <input type="file" name="file" id="file" className={cx('file')}></input>
-                                    <label htmlFor="file">
-                                        <img src={icons.picture} alt="" className={cx('icon')}></img>
-                                    </label>
+                        <div className={cx('chat-send')}>
+                            <form>
+                                <input type="file" name="file" id="file" className={cx('file')}></input>
+                                <label htmlFor="file">
+                                    <img src={icons.picture} alt="" className={cx('icon')}></img>
+                                </label>
 
-                                    <div className={cx('message-input')}>
-                                        <input
-                                            type="text"
-                                            name="message"
-                                            id="message"
-                                            className={cx('input')}
-                                            placeholder="write something..."
-                                            onChange={(e) => {
-                                                setNewMessage(e.target.value);
-                                            }}
-                                            value={newMessage}
-                                        ></input>
-                                    </div>
-
+                                <div className={cx('message-input')}>
                                     <input
-                                        type="submit"
-                                        name="send"
-                                        id="send"
-                                        className={cx('send')}
-                                        onClick={handleSubmit}
+                                        type="text"
+                                        name="message"
+                                        id="message"
+                                        className={cx('input')}
+                                        placeholder="Aa..."
+                                        onChange={(e) => {
+                                            setNewMessage(e.target.value);
+                                        }}
+                                        value={newMessage}
                                     ></input>
-                                    <label htmlFor="send">
-                                        <img src={icons.send} alt="" className={cx('icon')}></img>
-                                    </label>
-                                </form>
-                            </div>
-                        )}
+                                </div>
+
+                                <input
+                                    type="submit"
+                                    name="send"
+                                    id="send"
+                                    className={cx('send')}
+                                    onClick={handleSubmit}
+                                ></input>
+                                <label htmlFor="send">
+                                    <img src={icons.send} alt="" className={cx('icon')}></img>
+                                </label>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -54,25 +54,34 @@
     border-top: 0.2rem solid #d3cfcf;
 }
 
-table {
+.order-result table,
+.order-detail table {
     margin-top: 2rem;
     border-collapse: collapse;
     width: 100%;
 }
 
-td,
-th {
+.order-result td,
+.order-detail td,
+.order-result th,
+.order-detail th {
     border: 1px solid #303744;
     text-align: center;
     padding: 8px;
 }
 
-th {
+.order-result th,
+.order-detail th {
     background-color: #303744;
     color: white;
 }
 
-ul {
+.order-result table tr td:first-child {
+    width: 30%;
+}
+
+.order-result ul,
+.order-detail ul {
     list-style: none;
     text-align: left;
 }

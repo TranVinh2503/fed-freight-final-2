@@ -59,6 +59,22 @@
     overflow-y: scroll;
 }
 
+.chat-box {
+    display: none;
+}
+
+.chat-box:checked + .user-box > div {
+    background-color: rgba(22, 24, 35, 0.3);
+}
+
+.user-box {
+    height: max-content;
+    width: max-content;
+    cursor: pointer;
+    &:hover > div{
+        background-color: rgba(22, 24, 35, 0.2);
+    }
+}
 
 .chat-room {
     flex: 3;
@@ -68,6 +84,12 @@
     height: 85%;
     overflow-y: scroll;
     position: relative;
+}
+
+.no-conversations-chat {
+    width: 100%;
+    height: 100%;
+    text-align: center;
 }
 
 .chat-send {

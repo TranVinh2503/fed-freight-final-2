@@ -5,7 +5,7 @@ import axios from 'axios';
 
 const cx = classNames.bind(styles);
 
-function UserBox({ feedback = false, chatbox = false, search = false, avatarId, idUser, content }) {
+function UserBox({ feedback = false, chatbox = false, search = false, interactiveUser = false, avatarId, idUser, content }) {
     let id = JSON.stringify(avatarId).replaceAll('"', '');
     // let src = '..' + id + '.jpg';
     // console.log(src);
@@ -32,12 +32,13 @@ function UserBox({ feedback = false, chatbox = false, search = false, avatarId, 
         feedback,
         chatbox,
         search,
+        interactiveUser,
     });
     return (
         <div className={classes}>
             <img src={avatarSrc} alt="" className={cx('customer-avatar')}></img>
             <div className={cx('customer-details')}>
-                <div className={cx('customer-name')}>{name}</div>
+                <div className={cx('customer-name')}>{name}{idUser}</div>
                 <div className={cx('customer-text')}>{content}</div>
             </div>
         </div>
